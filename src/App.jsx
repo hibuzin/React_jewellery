@@ -13,7 +13,6 @@ function Home() {
     <>
       <AppBar />
 
-      {/* Title */}
       <div
         style={{
           marginTop: "20px",
@@ -24,7 +23,7 @@ function Home() {
         <h2
           style={{
             color: "#000000",
-            fontSize: "clamp(16px, 2vw, 24px)", // responsive
+            fontSize: "clamp(16px, 2vw, 24px)",
             lineHeight: 1.3,
           }}
         >
@@ -32,18 +31,9 @@ function Home() {
         </h2>
       </div>
 
-      {/* TabsBar wrapper to hide scrollbar */}
-      <div
-        style={{
-          overflowX: "auto",
-          scrollbarWidth: "none", // Firefox
-          msOverflowStyle: "none", // IE 10+
-        }}
-      >
-        <TabsBar />
-      </div>
+      {/* ✅ Directly render TabsBar */}
+      <TabsBar />
 
-      {/* Slider and Product */}
       <Slider />
       <SliderText />
       <Product />
