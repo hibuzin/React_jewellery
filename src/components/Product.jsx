@@ -28,15 +28,16 @@ export default function Product() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: columns,
-        gap: "20px",
-        padding: "20px",
-      }}
-    >
+ return (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        window.innerWidth <= 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+      gap: window.innerWidth <= 768 ? "12px" : "20px",
+      padding: window.innerWidth <= 768 ? "10px" : "20px",
+    }}
+  >
       {items.map((item) => {
         const isHovered = hovered === item._id;
 
@@ -57,7 +58,13 @@ export default function Product() {
             }}
           >
             {/* Fixed-size wrapper */}
-            <div style={{ width: "100%", height: "250px", overflow: "hidden" }}>
+           <div
+  style={{
+    width: "100%",
+    height: window.innerWidth <= 768 ? "200px" : "350px",
+    overflow: "hidden",
+  }}
+>
               <img
                 src={item.image.url}
                 alt={item.title}
@@ -66,7 +73,8 @@ export default function Product() {
                   height: "100%",
                   objectFit: "cover",
                   transition: "transform 0.3s",
-                 transform: isHovered ? "scale(1.2)" : "scale(1)"  // 110%// ✅ Zoom in on hover
+                transform:
+  window.innerWidth > 768 && isHovered ? "scale(1.1)" : "scale(1)" // 110%// ✅ Zoom in on hover
                 }}
               />
             </div>
@@ -79,7 +87,7 @@ export default function Product() {
                 width: "100%",
                 padding: "10px",
                 background:
-                  "linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0))",
+                  "linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0,0,0,0))",
                 color: "#fff",
                 transition: "background 0.3s",
               }}

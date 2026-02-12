@@ -8,6 +8,19 @@ const images = [img, img1, img2];
 export default function Slider() {
   const [current, setCurrent] = useState(0);
   const [transition, setTransition] = useState(true);
+  const [sliderHeight, setSliderHeight] = useState("350px"); // default desktop height
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 480) setSliderHeight("200px"); // mobile
+      else if (window.innerWidth <= 768) setSliderHeight("250px"); // tablet
+      else setSliderHeight("350px"); // desktop
+    };
+
+    handleResize(); // set initial height
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,7 +42,7 @@ export default function Slider() {
   }, [current]);
 
   return (
-    <div style={styles.slider}>
+    <div style={{ ...styles.slider, height: sliderHeight }}>
       <div
         style={{
           ...styles.slideTrack,
@@ -38,7 +51,11 @@ export default function Slider() {
         }}
       >
         {[...images, images[0]].map((image, index) => (
-          <img key={index} src={image} style={styles.image} />
+          <img
+            key={index}
+            src={image}
+            style={{ ...styles.image, height: sliderHeight }}
+          />
         ))}
       </div>
     </div>
@@ -48,7 +65,6 @@ export default function Slider() {
 const styles = {
   slider: {
     width: "100%",
-    height: "350px",
     overflow: "hidden",
   },
   slideTrack: {
@@ -56,7 +72,6 @@ const styles = {
   },
   image: {
     width: "100%",
-    height: "350px",
     objectFit: "cover",
     flexShrink: 0,
   },

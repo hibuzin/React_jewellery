@@ -2,13 +2,8 @@ export default function AppBar() {
   return (
     <header style={styles.appbar}>
       <div style={styles.container}>
-        <h1 style={styles.logo}> Royal Jewellery</h1>
+        <h1 style={styles.logo}>Royal Jewellery</h1>
 
-        <nav>
-          <a href="#" style={styles.link}>Home</a>
-          <a href="#" style={styles.link}>Collections</a>
-          <a href="#" style={styles.link}>About</a>
-        </nav>
       </div>
     </header>
   );
@@ -19,27 +14,35 @@ const styles = {
     top: 0,
     left: 0,
     width: "100%",
-    backgroundColor: "#FFC107", // golden
-    zIndex: 1000,
+    backgroundColor: "#FFC107",
   },
+
   container: {
     width: "100%",
-    padding: "0 40px",
+    padding: "0 20px", // ✅ reduced padding (mobile friendly)
     boxSizing: "border-box",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "center", // ✅ now safe
     alignItems: "center",
-    height: "70px",
+    flexWrap: "wrap", // ⭐ IMPORTANT for mobile
+    minHeight: "60px",
   },
+
   logo: {
-    color: "black",       // ✅ changed from white to black
-    fontSize: "24px",
+    color: "black",
+    fontSize: "clamp(18px, 4vw, 24px)", // ✅ responsive font
     fontWeight: "bold",
   },
+
+  nav: {
+    display: "flex",
+    gap: "15px",
+    flexWrap: "wrap", // ✅ prevents overflow
+  },
+
   link: {
-    color: "black",       // ✅ changed from white to black
+    color: "black",
     textDecoration: "none",
-    marginLeft: "25px",
-    fontSize: "16px",
+    fontSize: "clamp(14px, 3vw, 16px)", // responsive
   },
 };

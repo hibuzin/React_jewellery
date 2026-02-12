@@ -13,16 +13,40 @@ function Home() {
     <>
       <AppBar />
 
-      <div style={{ marginTop: "20px" }}>
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ color: "#000000" }}>Discover our premium collections</h2>
-        </div>
-
-        <TabsBar />
-        <Slider />
-        <SliderText />
-        <Product /> {/* Product grid */}
+      {/* Title */}
+      <div
+        style={{
+          marginTop: "20px",
+          textAlign: "center",
+          padding: "0 10px",
+        }}
+      >
+        <h2
+          style={{
+            color: "#000000",
+            fontSize: "clamp(16px, 2vw, 24px)", // responsive
+            lineHeight: 1.3,
+          }}
+        >
+          Discover our premium collections
+        </h2>
       </div>
+
+      {/* TabsBar wrapper to hide scrollbar */}
+      <div
+        style={{
+          overflowX: "auto",
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE 10+
+        }}
+      >
+        <TabsBar />
+      </div>
+
+      {/* Slider and Product */}
+      <Slider />
+      <SliderText />
+      <Product />
     </>
   );
 }
