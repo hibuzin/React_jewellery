@@ -1,0 +1,371 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import CryptoJS from "crypto-js";
+
+const SECRET_KEY = "royal_jewellery_secret";
+
+const getToken = () => {
+  try {
+    const encryptedData = localStorage.getItem("auth");
+    if (!encryptedData) return null;
+    const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+    const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return data.token;
+  } catch {
+    return null;
+  }
+};
+
+export default function WishlistPage() {
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const token = getToken();
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth <= 600);
+  };
+
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    } else {
+      fetchWishlist();
+    }
+  }, []);
+
+  const fetchWishlist = async () => {
+    try {
+      const res = await fetch(
+        "https://jewellery-backend-icja.onrender.com/api/wishlist",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+       setWishlistItems(data?.wishlist || []);
+      }
+    } catch (e) {
+      console.error(" ERROR:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div style={styles.centered}>
+        <div style={styles.spinner} />
+        <p style={styles.loadingText}>Loading your wishlist...</p>
+      </div>
+    );
+  }
+
+  if (wishlistItems.length === 0) {
+    return (
+      <div style={styles.centered}>
+        <div style={styles.emptyIcon}>♡</div>
+        <p style={styles.emptyText}>Your wishlist is empty</p>
+        <p style={styles.emptySubText}>Save items you love to your wishlist</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={styles.page}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerInner}>
+          <p style={styles.headerSub}>CURATED FOR YOU</p>
+          <h1 style={styles.headerTitle}>My Wishlist</h1>
+          <div style={styles.headerLine} />
+          <p style={styles.headerCount}>{wishlistItems.length} pieces saved</p>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div style={styles.gridWrapper}>
+       <div
+  style={{
+    ...styles.grid,
+    gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+  }}
+>
+          {wishlistItems.map((product, i) => {
+  return <WishlistCard key={i} product={product} />;  // item.product இல்ல, directly product
+})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WishlistCard({ product }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      style={{
+        ...styles.card,
+        transform: hovered ? "translateY(-6px)" : "translateY(0)",
+        boxShadow: hovered
+          ? "0 20px 60px rgba(212,175,55,0.18)"
+          : "0 4px 24px rgba(0,0,0,0.07)",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Image */}
+      <div style={styles.imageWrapper}>
+        <img
+          src={product.image?.url || product.image}
+          alt={product.title}
+          style={{
+            ...styles.image,
+            transform: hovered ? "scale(1.05)" : "scale(1)",
+          }}
+        />
+        {/* Overlay on hover */}
+        <div style={{ ...styles.imageOverlay, opacity: hovered ? 1 : 0 }} />
+
+        {/* Availability badge */}
+        <div
+          style={{
+            ...styles.badge,
+            background: product.isAvailable
+              ? "rgba(46,125,50,0.9)"
+              : "rgba(198,40,40,0.9)",
+          }}
+        >
+          {product.isAvailable ? "Available" : "Out of Stock"}
+        </div>
+      </div>
+
+      {/* Details */}
+      <div style={styles.details}>
+        <h3 style={styles.title}>{product.title}</h3>
+
+        <div style={styles.meta}>
+          <span style={styles.gram}>{product.gram} g</span>
+        </div>
+
+        <div style={styles.price}>₹{product.price}</div>
+      </div>
+
+      {/* Bottom golden line accent */}
+      <div
+        style={{
+          ...styles.cardAccent,
+          width: hovered ? "100%" : "0%",
+        }}
+      />
+    </div>
+  );
+}
+
+const styles = {
+  page: {
+    background: "#ffffff",
+    minHeight: "100vh",
+  },
+
+  centered: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    background: "#ffffff",
+  },
+
+  spinner: {
+    width: 36,
+    height: 36,
+    border: "2px solid #eee",
+    borderTop: "2px solid #D4AF37",
+    borderRadius: "1",
+    animation: "spin 0.8s linear infinite",
+  },
+
+  loadingText: {
+    marginTop: 16,
+    color: "#999",
+    fontSize: 14,
+    letterSpacing: 1,
+  },
+
+  emptyIcon: {
+    fontSize: 64,
+    color: "#D4AF37",
+    marginBottom: 16,
+    opacity: 0.5,
+  },
+
+  emptyText: {
+    fontSize: 22,
+    color: "#444",
+    fontWeight: 300,
+    letterSpacing: 1,
+  },
+
+  emptySubText: {
+    fontSize: 14,
+    color: "#aaa",
+    marginTop: 8,
+  },
+
+  /* Header */
+ header: {
+  background: "#fff",
+  borderBottom: "1px solid rgba(212,175,55,0.15)",
+  padding: "5px 14px 5px",  // இன்னும் சின்னதா
+  textAlign: "center",
+},
+
+  headerInner: {
+    maxWidth: 500,
+    margin: "auto",
+  },
+
+  headerSub: {
+    fontSize: 11,
+    letterSpacing: 4,
+    color: "#D4AF37",
+    marginBottom: 8,
+    fontWeight: 500,
+  },
+
+ headerTitle: {
+  fontSize: 24,  // 36 → 24
+  fontWeight: 300,
+  color: "#222",
+  letterSpacing: 2,
+  margin: 0,
+},
+
+ headerLine: {
+  width: 48,
+  height: 1,
+  background: "#D4AF37",
+  margin: "8px auto",  // 16px → 8px
+},
+
+  headerCount: {
+    fontSize: 13,
+    color: "#aaa",
+    letterSpacing: 1,
+  },
+
+  /* Grid */
+  gridWrapper: {
+    maxWidth: 1100,
+    margin: "0 auto",
+    padding: "40px 20px",
+  },
+
+grid: {
+  display: "grid",
+  gap: 28,
+},
+
+  /* Card */
+  card: {
+    background: "#fff",
+    borderRadius: 1,
+    overflow: "hidden",
+    cursor: "pointer",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    position: "relative",
+  },
+
+  imageWrapper: {
+    position: "relative",
+    overflow: "hidden",
+    height: 200,
+  },
+
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.5s ease",
+    display: "block",
+  },
+
+  imageOverlay: {
+    position: "absolute",
+    inset: 0,
+    background: "rgba(212,175,55,0.08)",
+    transition: "opacity 0.3s ease",
+  },
+
+  badge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    padding: "4px 10px",
+    borderRadius: 20,
+  },
+
+  details: {
+    padding: "18px 20px 20px",
+  },
+
+  title: {
+    fontSize: 15,
+    fontWeight: 500,
+    color: "#222",
+    margin: "0 0 10px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    letterSpacing: 0.3,
+  },
+
+  meta: {
+    display: "flex",
+    gap: 8,
+    marginBottom: 10,
+  },
+
+  gram: {
+    background: "rgba(212,175,55,0.1)",
+    color: "#D4AF37",
+    fontSize: 11,
+    padding: "3px 10px",
+    borderRadius: 20,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+  },
+
+  price: {
+    fontSize: 20,
+    color: "#D4AF37",
+    fontWeight: 500,
+    letterSpacing: 0.5,
+  },
+
+  cardAccent: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    height: 2,
+    background: "linear-gradient(90deg, #D4AF37, #f0d060)",
+    transition: "width 0.4s ease",
+  },
+};

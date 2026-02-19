@@ -34,6 +34,7 @@ export default function Slider() {
     if (current === images.length) {
       setTimeout(() => {
         setTransition(false);
+         setCurrent((prev) => (prev + 1) % images.length);
         setCurrent(0);
       }, 600);
     } else {

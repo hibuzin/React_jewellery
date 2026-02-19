@@ -1,52 +1,53 @@
-// App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import AppBar from "./components/AppBar";
-import TabsBar from "./components/TabsBar";
-import Slider from "./components/Slider";
-import SliderText from "./components/SliderText";
-import Product from "./components/Product";
+import MainLayout from "./components/MainLayout";
+
+import HomePage from "./pages/HomePage";
+import GoldPage from "./pages/GoldPage";
+import GemstonePage from "./pages/GemstonePage";
+import WeddingPage from "./pages/WeddingPage";
+import DiamondPage from "./pages/DiamondPage";
+import PlatinumPage from "./pages/PlatinumPage";
+import RoseGoldPage from "./pages/RoseGoldPage";
+import RingPage from "./pages/RingPage";
+import CartPage from "./components/Cart";
+import AddressPage from "./pages/AddressPage";
+import OrderPage from "./pages/OrderPage";
+
 import ProductDetailPage from "./pages/ProductDetailPage";
-
-function Home() {
-  return (
-    <>
-      <AppBar />
-
-      <div
-        style={{
-          marginTop: "20px",
-          textAlign: "center",
-          padding: "0 10px",
-        }}
-      >
-        <h2
-          style={{
-            color: "#000000",
-            fontSize: "clamp(16px, 2vw, 24px)",
-            lineHeight: 1.3,
-          }}
-        >
-          Discover our premium collections
-        </h2>
-      </div>
-
-      {/* ✅ Directly render TabsBar */}
-      <TabsBar />
-
-      <Slider />
-      <SliderText />
-      <Product />
-    </>
-  );
-}
+import LoginPage from "./pages/LoginPage";
+import WishlistPage from "./components/Wishlist";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+
+        {/* ✅ Parent layout */}
+        <Route path="/" element={<MainLayout />}>
+
+          {/* Home */}
+          <Route index element={<HomePage />} />
+
+          {/* Tabs pages */}
+          <Route path="gold" element={<GoldPage />} />
+          <Route path="gemstone" element={<GemstonePage />} />
+          <Route path="wedding" element={<WeddingPage />} />
+          <Route path="diamond" element={<DiamondPage />} />
+          <Route path="platinum" element={<PlatinumPage />} />
+          <Route path="rosegold" element={<RoseGoldPage />} />
+          <Route path="ring" element={<RingPage />} />
+
+        </Route>
+
+        {/* Outside layout */}
         <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/address" element={<AddressPage />} />
+        <Route path="/order" element={<OrderPage />} />
+        <Route path="wishlist" element={<WishlistPage />} />
+
       </Routes>
     </Router>
   );

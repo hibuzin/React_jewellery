@@ -1,20 +1,10 @@
-import { FaWhatsapp } from "react-icons/fa";
-
 export default function AppBar() {
   return (
     <header style={styles.appbar}>
       <div style={styles.container}>
-        <h1 style={styles.logo}>Royal Jewellery</h1>
-
-        {/* WhatsApp Icon */}
-        <a
-          href="https://wa.me/8526854562"  // 🔥 replace with your number
-          target="_blank"
-          rel="noopener noreferrer"
-          style={styles.whatsapp}
-        >
-          <FaWhatsapp size={26} />
-        </a>
+        <h1 style={styles.logo}>
+          WEDDING SALE - 20% FLAT SALE ON GOLD RING
+        </h1>
       </div>
     </header>
   );
@@ -28,24 +18,18 @@ const styles = {
 
   container: {
     width: "100%",
-    padding: "0 20px",
+    height: "30px",   // 🔥 reduced height
     boxSizing: "border-box",
     display: "flex",
-    justifyContent: "space-between",  // 🔥 important
+    justifyContent: "center",
     alignItems: "center",
-    minHeight: "60px",
   },
 
   logo: {
     color: "black",
-    fontSize: "clamp(18px, 4vw, 24px)",
-    fontWeight: "bold",
-  },
-
-  whatsapp: {
-    color: "#25D366",
-    display: "flex",
-    alignItems: "center",
-    textDecoration: "none",
+    fontSize: "clamp(10px, 2vw, 10px)",  // 🔥 smaller font
+    fontWeight: "50",
+    margin: 0,
+    textAlign: "center",
   },
 };

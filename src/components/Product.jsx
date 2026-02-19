@@ -1,105 +1,249 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+
+import asset1 from "../assets/image.png";
+import asset2 from "../assets/image1.png";
+import asset3 from "../assets/image2.png";
+import asset4 from "../assets/image3.png";
 
 export default function Product() {
   const [items, setItems] = useState([]);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [hovered, setHovered] = useState(null);
+ const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
+
+  /* ================= FETCH PRODUCTS ================= */
 
   useEffect(() => {
     fetch("https://jewellery-backend-icja.onrender.com/api/products/")
       .then((res) => res.json())
-      .then((data) => setItems(data))
-      .catch((err) => console.error(err));
+      .then((data) => {
+        setItems(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
 
-  // Responsive columns
-  const getColumns = () => {
-    if (window.innerWidth <= 480) return "repeat(2, 1fr)"; // Mobile: 2 per row
-    if (window.innerWidth <= 768) return "repeat(3, 1fr)"; // Tablet: 3 per row
-    return "repeat(auto-fill, minmax(250px, 1fr))"; // Desktop
-  };
-
-  const [columns, setColumns] = useState(getColumns());
+  /* ================= RESPONSIVE ================= */
 
   useEffect(() => {
-    const handleResize = () => setColumns(getColumns());
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
- return (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns:
-        window.innerWidth <= 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-      gap: window.innerWidth <= 768 ? "12px" : "20px",
-      padding: window.innerWidth <= 768 ? "10px" : "20px",
-    }}
-  >
-      {items.map((item) => {
-        const isHovered = hovered === item._id;
+  /* ================= ANIMATION ================= */
 
-        return (
-          <div
-            key={item._id}
-            onClick={() => navigate(`/product/${item._id}`)}
-            onMouseEnter={() => setHovered(item._id)}
-            onMouseLeave={() => setHovered(null)}
-            style={{
-              position: "relative",
-              borderRadius: "8px",
-              overflow: "hidden",
-              backgroundColor: "#fdfcfb",
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              transition: "box-shadow 0.3s",
-            }}
-          >
-            {/* Fixed-size wrapper */}
-           <div
-  style={{
-    width: "100%",
-    height: window.innerWidth <= 768 ? "200px" : "350px",
-    overflow: "hidden",
-  }}
->
-              <img
-                src={item.image.url}
-                alt={item.title}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  transition: "transform 0.3s",
-                transform:
-  window.innerWidth > 768 && isHovered ? "scale(1.1)" : "scale(1)" // 110%// ✅ Zoom in on hover
-                }}
-              />
-            </div>
+  const assetRefs = [
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+  ];
 
-            <div
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.transform = "translateX(0)";
+            entry.target.style.opacity = "1";
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    assetRefs.forEach((ref) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => {
+      assetRefs.forEach((ref) => {
+        if (ref.current) observer.unobserve(ref.current);
+      });
+    };
+  }, []);
+
+  /* ================= UI ================= */
+
+  return (
+    <div style={styles.container}>
+      {/* PRODUCTS GRID */}
+
+      <div
+        style={{
+          ...styles.grid,
+          gridTemplateColumns: isMobile
+            ? "repeat(2, 1fr)"
+            : "repeat(4, 1fr)",
+        }}
+      >
+        {loading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} style={styles.skeletonCard} />
+            ))
+          : items.map((item) => {
+              const isHovered = hovered === item._id;
+
+              return (
+                <div
+                  key={item._id}
+                  style={styles.card}
+                  onClick={() => navigate(`/product/${item._id}`)}
+                  onMouseEnter={() => setHovered(item._id)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <div
+                    style={{
+                      ...styles.imageWrapper,
+                      height: isMobile ? "200px" : "280px",
+                    }}
+                  >
+                    <img
+                      src={
+                        typeof item.image === "string"
+                          ? item.image
+                          : item.image?.url || asset1
+                      }
+                      alt={item.title}
+                      style={{
+                        ...styles.image,
+                        transform: isHovered
+                          ? "scale(1.08)"
+                          : "scale(1)",
+                      }}
+                    />
+                  </div>
+
+                  <div style={styles.overlay}>
+                    <h4 style={styles.title}>{item.title}</h4>
+                    <p style={styles.price}>₹{item.price}</p>
+                  </div>
+                </div>
+              );
+            })}
+      </div>
+
+      {/* EXTRA SECTION */}
+
+      <div style={styles.extraSection}>
+        <h2 style={styles.heading}>
+          Discover our premium collections
+        </h2>
+
+        <div style={styles.assetGrid}>
+          {[asset1, asset2, asset3, asset4].map((img, index) => (
+            <img
+              key={index}
+              ref={assetRefs[index]}
+              src={img}
+              alt="collection"
               style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                width: "100%",
-                padding: "10px",
-                background:
-                  "linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0,0,0,0))",
-                color: "#fff",
-                transition: "background 0.3s",
+                ...styles.assetImage,
+                transform:
+                  index < 2
+                    ? "translateX(-60px)"
+                    : "translateX(60px)",
               }}
-            >
-              <h4 style={{ margin: 0, fontSize: "14px" }}>{item.title}</h4>
-              <p style={{ margin: "5px 0 0 0", fontWeight: "bold" }}>
-                ₹{item.price}
-              </p>
-            </div>
-          </div>
-        );
-      })}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
+/* ================= STYLES ================= */
+
+const styles = {
+  container: {
+    padding: "20px",
+  },
+
+  grid: {
+    display: "grid",
+    gap: "40px",
+  },
+
+  card: {
+    position: "relative",
+    borderRadius: "1px",
+    overflow: "hidden",
+    cursor: "pointer",
+    background: "#fdfcfb",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  },
+
+  imageWrapper: {
+    width: "100%",
+    overflow: "hidden",
+  },
+
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.4s ease",
+  },
+
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    padding: "12px",
+    color: "#fff",
+    background:
+      "linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0))",
+  },
+
+  title: {
+    margin: 0,
+    fontSize: "14px",
+  },
+
+  price: {
+    margin: "5px 0 0 0",
+    fontWeight: "bold",
+  },
+
+  skeletonCard: {
+    height: "280px",
+    borderRadius: "1px",
+    background:
+      "linear-gradient(90deg,#eee 25%,#f5f5f5 37%,#eee 63%)",
+    backgroundSize: "400% 100%",
+    animation: "shine 1.2s ease infinite",
+  },
+
+  extraSection: {
+    marginTop: "50px",
+    textAlign: "center",
+  },
+
+  heading: {
+    fontSize: "22px",
+    marginBottom: "20px",
+  },
+
+  assetGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "12px",
+  },
+
+  assetImage: {
+    width: "100%",
+    borderRadius: "1px",
+    opacity: 0,
+    transition: "all 0.8s ease",
+  },
+};
