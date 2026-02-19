@@ -16,7 +16,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [showQty, setShowQty] = useState(false);
   const [similarProducts, setSimilarProducts] = useState([]);
-
+  const mainImgUrl = product?.mainImage?.url || product?.image?.url || "https://via.placeholder.com/600";
 
   useEffect(() => {
   if (!id) return;
@@ -53,11 +53,17 @@ export default function ProductDetailPage() {
     return <p style={{ textAlign: "center", padding: "50px" }}>Loading...</p>;
 
   if (!product)
-    return (
-      <p style={{ textAlign: "center", padding: "50px" }}>
-        Product not found.
-      </p>
-    );
+  return (
+    <p style={{ textAlign: "center", padding: "50px" }}>
+      Product not found.
+    </p>
+  );
+
+const imagesArray = [
+  ...(product?.mainImage ? [product.mainImage] : []),
+  ...(product?.images || []),
+];
+  
 
   const SECRET_KEY = "royal_jewellery_secret";
 
@@ -187,52 +193,51 @@ export default function ProductDetailPage() {
         {/* LEFT — IMAGE + THUMBNAILS */}
         <div className="image-section">
           {/* THUMBNAILS */}
-          <div className="thumbnail-wrapper">
-            {[1, 2, 3, 4, 5].map((_, i) => (
-              <div
-                key={i}
-                className="thumbnail-item"
-                onMouseEnter={() => setActiveIndex(i)}
-                onClick={() => setActiveIndex(i)}
-                style={{
-                  borderRadius: "1px",
-                  overflow: "hidden",
-                  cursor: "pointer",
-                  border:
-                    activeIndex === i
-                      ? "2px solid #f4b400"
-                      : "1px solid #ddd",
-                  background: "#f5f5f5",
-                  transition: "0.2s",
-                }}
-              >
-                <img
-                  src={product.image.url}
-                  alt="thumb"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+         {/* THUMBNAILS */}
+<div className="thumbnail-wrapper">
+  {imagesArray.map((img, i) => (
+    <div
+      key={i}
+      className="thumbnail-item"
+      onMouseEnter={() => setActiveIndex(i)}
+      onClick={() => setActiveIndex(i)}
+      style={{
+        borderRadius: "1px",
+        overflow: "hidden",
+        cursor: "pointer",
+        border: activeIndex === i ? "2px solid #f4b400" : "1px solid #ddd",
+        background: "#f5f5f5",
+        transition: "0.2s",
+      }}
+    >
+      <img
+        src={img?.url || "https://via.placeholder.com/90"}
+        alt={`thumb-${i}`}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    </div>
+  ))}
+</div>
 
-          {/* MAIN IMAGE */}
-          <div className="main-image-wrapper" style={{ flex: 1 }}>
-            <img
-              src={product.image.url}
-              alt={product.title}
-              style={{
-                width: "100%",
-                height: "auto",
-                maxHeight: "600px",
-                borderRadius: "1px",
-                objectFit: "cover",
-                background: "#eee",
-              }}
-            />
+{/* MAIN IMAGE */}
+<div className="main-image-wrapper" style={{ flex: 1 }}>
+ <img
+  src={
+    imagesArray[activeIndex]?.url ||
+    product?.mainImage?.url ||
+    product?.image?.url ||        // ✅ fallback
+    "https://via.placeholder.com/600"
+    }
+    alt={product.title}
+    style={{
+      width: "100%",
+      height: "auto",
+      maxHeight: "600px",
+      borderRadius: "1px",
+      objectFit: "cover",
+      background: "#eee",
+    }}
+  />
           </div>
         </div>
 

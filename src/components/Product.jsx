@@ -107,20 +107,16 @@ export default function Product() {
                       height: isMobile ? "200px" : "280px",
                     }}
                   >
-                    <img
-                      src={
-                        typeof item.image === "string"
-                          ? item.image
-                          : item.image?.url || asset1
-                      }
-                      alt={item.title}
-                      style={{
-                        ...styles.image,
-                        transform: isHovered
-                          ? "scale(1.08)"
-                          : "scale(1)",
-                      }}
-                    />
+                   <img
+  src={
+    item.mainImage?.url || item.image?.url || item.images?.[0]?.url 
+  }
+  alt={item.title}
+  style={{
+    ...styles.image,
+    transform: isHovered ? "scale(1.08)" : "scale(1)",
+  }}
+/>
                   </div>
 
                   <div style={styles.overlay}>
