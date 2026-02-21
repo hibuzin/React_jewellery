@@ -89,7 +89,7 @@ export default function CartPage() {
 
       {/* Empty */}
       {cartItems.length === 0 ? (
-        <div style={styles.empty}>
+        <div style={{ color: "#333", textAlign: "center", padding: 60 }}>
           <h3>Your cart is empty</h3>
         </div>
       ) : (
@@ -102,15 +102,17 @@ export default function CartPage() {
 
               return (
                 <div key={i} style={styles.card}>
-                  <img
-                    src={
-                      product.image?.url ||
-                      product.image ||
-                      "https://via.placeholder.com/120"
-                    }
-                    alt=""
-                    style={styles.image}
-                  />
+                 <img
+  src={
+    product.mainImage?.url ||
+    product.image?.url ||
+    product.images?.[0]?.url ||
+    product.image ||
+    "https://via.placeholder.com/120"
+  }
+  alt={product.title}
+  style={styles.image}
+/>
 
                   <div style={{ flex: 1 }}>
                     <h3 style={{ fontWeight: 400 }}>{product.title}</h3>

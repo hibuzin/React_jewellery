@@ -14,7 +14,6 @@ export default function MainHeader() {
 
   return (
     <>
-      {/* ✅ STYLE MOVED HERE */}
       <style>{`
         .main-header {
           margin-top: 10px;
@@ -49,7 +48,7 @@ export default function MainHeader() {
           right: 16px;
           display: flex;
           gap: 10px;
-          font-size: clamp(18px, 4vw, 22px);
+          font-size: clamp(16px, 3vw, 18px); /* smaller */
           color: #333;
           align-items: center;
           cursor: pointer;
@@ -89,6 +88,23 @@ export default function MainHeader() {
           white-space: nowrap;
         }
 
+        /* ✅ TABLET */
+        @media (max-width: 768px) {
+          .main-header {
+            min-height: 44px;
+            padding: 0 12px;
+          }
+
+          .header-icons {
+            gap: 8px;
+          }
+
+          .header-left {
+            gap: 8px;
+          }
+        }
+
+        /* ✅ MOBILE */
         @media (max-width: 480px) {
           .help-text {
             display: none;
@@ -103,9 +119,9 @@ export default function MainHeader() {
           }
         }
 
+        /* ✅ SMALL MOBILE */
         @media (max-width: 360px) {
           .currency-select {
-            display: none;
           }
         }
       `}</style>
@@ -123,9 +139,9 @@ export default function MainHeader() {
             <option value="EUR">€ EUR</option>
           </select>
 
-          <div className="help-wrapper" onClick={() => navigate("/help")}>
+          <div className="help-wrapper">
             <IoHelpCircleOutline
-              style={{ fontSize: "clamp(16px, 3vw, 20px)", color: "#333" }}
+              style={{ fontSize: "clamp(10px, 2vw, 15px)", color: "#333" }}
             />
             <span className="help-text">NEED HELP</span>
           </div>

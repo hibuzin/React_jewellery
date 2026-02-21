@@ -5,11 +5,9 @@ export default function TabsBar() {
     { name: "HOME", path: "/" },
     { name: "GOLD", path: "/gold" },
     { name: "GEMSTONE", path: "/gemstone" },
-    { name: "WEDDING", path: "/wedding" },
     { name: "DIAMOND", path: "/diamond" },
     { name: "PLATINUM", path: "/platinum" },
     { name: "ROSE GOLD", path: "/rosegold" },
-    { name: "RING", path: "/ring" },
   ];
 
   return (
@@ -22,7 +20,7 @@ export default function TabsBar() {
               to={tab.path}
               style={({ isActive }) => ({
                 ...styles.tab,
-                color: isActive ? "#d4af37" : "black",
+                color: isActive ? "#ffb700" : "black",
                 textDecoration: "none",
               })}
             >
@@ -62,7 +60,7 @@ const styles = {
   tab: {
     position: "relative",
     cursor: "pointer",
-    fontWeight: "300",
+    fontWeight: "400",
     fontSize: "14px",
     paddingBottom: "3px",
     whiteSpace: "nowrap",

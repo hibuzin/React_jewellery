@@ -13,7 +13,8 @@ import RingPage from "./pages/RingPage";
 import CartPage from "./components/Cart";
 import AddressPage from "./pages/AddressPage";
 import OrderPage from "./pages/OrderPage";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import LoginPage from "./pages/LoginPage";
 import WishlistPage from "./components/Wishlist";
@@ -47,9 +48,20 @@ function App() {
         <Route path="/address" element={<AddressPage />} />
         <Route path="/order" element={<OrderPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
-
       </Routes>
+
+       {/* ⭐ IMPORTANT — Toast container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+      />
     </Router>
+
+      
   );
 }
 

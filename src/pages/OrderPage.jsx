@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
+import { toast } from "react-toastify";
 
 const SECRET_KEY = "royal_jewellery_secret";
 
@@ -77,7 +78,7 @@ export default function OrderPage() {
 
     try {
       const res = await fetch(
-        "https://jewellery-backend-icja.onrender.com/api/orders",
+        "https://jewellery-backend-icja.onrender.com/api/checkout",
         {
           method: "POST",
           headers: {
@@ -101,14 +102,14 @@ export default function OrderPage() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Order placed successfully! 🎉");
-        navigate("/");
-      } else {
-        alert(data.message || "Failed to place order");
-      }
-    } catch (e) {
-      alert(e.toString());
-    } finally {
+  toast.success("Order placed successfully ");
+  navigate("/");
+} else {
+  toast.error(data.message || "Failed to place order");
+}
+    }catch (e) {
+  toast.error("Something went wrong");
+}finally {
       setLoading(false);
     }
   };
@@ -148,7 +149,7 @@ export default function OrderPage() {
           <div style={styles.card}>
             {/* Address Header */}
             <div style={styles.cardHeader}>
-              <div style={styles.iconBox}>📍</div>
+              <div style={styles.iconBox}></div>
               <span style={styles.cardTitle}>Delivery Address</span>
             </div>
 
@@ -156,7 +157,7 @@ export default function OrderPage() {
               <>
                 <div style={styles.addressBox}>
                   <div style={styles.addressName}>{address.name}</div>
-                  <div style={styles.addressPhone}>📞 {address.phone}</div>
+                  <div style={styles.addressPhone}> {address.phone}</div>
                   <div style={styles.addressText}>
                     {address.street}, {address.city}, {address.state} - {address.pincode}
                   </div>
@@ -165,19 +166,19 @@ export default function OrderPage() {
                   style={styles.changeBtn}
                   onClick={() => navigate("/address")}
                 >
-                  ✏️ Change Address
+                   Change Address
                 </button>
               </>
             ) : (
               <div style={styles.warningBox}>
-                ⚠️ No address selected. Please go back and select an address.
+                 No address selected. Please go back and select an address.
               </div>
             )}
 
             {/* Payment */}
             <div style={{ marginTop: 24 }} />
             <div style={styles.paymentBox}>
-              <div style={{ fontSize: 24 }}>💵</div>
+              <div style={{ fontSize: 24 }}></div>
               <div>
                 <div style={styles.paymentTitle}>Cash on Delivery</div>
                 <div style={styles.paymentSub}>Pay when you receive your order</div>
@@ -188,23 +189,29 @@ export default function OrderPage() {
           {/* Right: Order Summary */}
           <div style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={styles.iconBox}>🧾</div>
+              <div style={styles.iconBox}></div>
               <span style={styles.cardTitle}>Order Summary</span>
             </div>
 
             {cartItems.length === 0 ? (
-              <p style={{ color: "#999", textAlign: "center", padding: 20 }}>No items in cart</p>
+              <p style={{ color: "#030303", textAlign: "center", padding: 20 }}>No items in cart</p>
             ) : (
               cartItems.map((item, i) => {
                 const p = item.product;
                 if (!p) return null;
                 return (
                   <div key={i} style={styles.productCard}>
-                    <img
-                      src={p.image?.url || p.image || "https://via.placeholder.com/100"}
-                      alt=""
-                      style={styles.productImage}
-                    />
+                   <img
+  src={
+    p?.mainImage?.url ||
+    p?.images?.[0]?.url ||
+    p?.image?.url ||
+    p?.image ||
+    "https://via.placeholder.com/100"
+  }
+  alt={p.title}
+  style={styles.productImage}
+/>
                     <div style={{ flex: 1 }}>
                       <div style={styles.productName}>{p.title}</div>
                       {p.gram && (
@@ -239,10 +246,10 @@ export default function OrderPage() {
               onClick={placeOrder}
               disabled={loading || !address}
             >
-              {loading ? "Placing Order..." : "✅  PLACE ORDER"}
+              {loading ? "Placing Order..." : "  PLACE ORDER"}
             </button>
 
-            <div style={styles.secureText}>🔒 Secure checkout</div>
+            <div style={styles.secureText}> Secure checkout</div>
           </div>
         </div>
       </div>
@@ -340,7 +347,7 @@ const styles = {
     padding: 16,
     marginBottom: 12,
   },
-  addressName: { fontWeight: 600, fontSize: 16, marginBottom: 6 },
+  addressName: {color: "#666", fontWeight: 600, fontSize: 16, marginBottom: 6 },
   addressPhone: { color: "#666", fontSize: 14, marginBottom: 8 },
   addressText: { color: "#888", fontSize: 13, lineHeight: 1.6 },
   changeBtn: {

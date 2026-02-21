@@ -48,29 +48,37 @@ export default function Product() {
     useRef(null),
   ];
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.style.transform = "translateX(0)";
-            entry.target.style.opacity = "1";
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-
-    assetRefs.forEach((ref) => {
-      if (ref.current) observer.observe(ref.current);
-    });
-
-    return () => {
-      assetRefs.forEach((ref) => {
-        if (ref.current) observer.unobserve(ref.current);
+ useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.style.transform = "translateX(0)";
+          entry.target.style.opacity = "1";
+        } else {
+          // return animation when scrolled back up
+          const index = assetRefs.findIndex(
+            (ref) => ref.current === entry.target
+          );
+          entry.target.style.transform =
+            index < 2 ? "translateX(-60px)" : "translateX(60px)";
+          entry.target.style.opacity = "0";
+        }
       });
-    };
-  }, []);
+    },
+    { threshold: 0.15 }
+  );
+
+  assetRefs.forEach((ref) => {
+    if (ref.current) observer.observe(ref.current);
+  });
+
+  return () => {
+    assetRefs.forEach((ref) => {
+      if (ref.current) observer.unobserve(ref.current);
+    });
+  };
+}, []);
 
   /* ================= UI ================= */
 
@@ -144,10 +152,7 @@ export default function Product() {
               alt="collection"
               style={{
                 ...styles.assetImage,
-                transform:
-                  index < 2
-                    ? "translateX(-60px)"
-                    : "translateX(60px)",
+               transform: index < 2 ? "translateX(-60px)" : "translateX(60px)",
               }}
             />
           ))}
@@ -240,6 +245,6 @@ const styles = {
     width: "100%",
     borderRadius: "1px",
     opacity: 0,
-    transition: "all 0.8s ease",
+   transition: "all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
   },
 };
