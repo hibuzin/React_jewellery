@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 const links = {
   Collections: ["Necklaces", "Earrings", "Bangles", "Rings", "Bracelets"],
-  Support: ["Track Order", "Returns", "Size Guide", "FAQ"],
+  Support: [ "Returns",  "FAQ"],
   Company: ["About Us", "Careers", "Press", "Contact"],
 };
 

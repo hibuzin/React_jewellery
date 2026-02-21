@@ -74,6 +74,38 @@ export default function ProductDetailPage() {
       }
     });
 
+    useEffect(() => {
+    console.log("🔌 Socket status:", socket.connected, "| Product ID:", id); // ⚡ ADD
+
+    socket.on("stockUpdated", ({ productId, quantity: newQty, isAvailable }) => {
+        console.log("📦 stockUpdated received — productId:", productId, "| page id:", id); // ⚡ ADD
+        if (productId.toString() === id.toString()) {
+            setProduct((prev) => ({ ...prev, quantity: newQty, isAvailable }));
+            toast.info(isAvailable ? `Stock updated: ${newQty} items available` : "This product is now Out of Stock");
+        }
+    });
+
+    socket.on("productUpdated", (updated) => {
+        console.log("✏️ productUpdated received:", updated); // ⚡ ADD
+        if (updated.productId.toString() === id.toString()) {
+            setProduct((prev) => ({ ...prev, ...updated }));
+        }
+    });
+
+    socket.on("productDeleted", ({ productId }) => {
+        if (productId.toString() === id.toString()) {
+            toast.error("This product has been removed.");
+            setTimeout(() => navigate("/"), 2000);
+        }
+    });
+
+    return () => {
+        socket.off("stockUpdated");
+        socket.off("productUpdated");
+        socket.off("productDeleted");
+    };
+}, [id]);
+
     // Admin updated product details (price, title, image etc)
     socket.on("productUpdated", (updated) => {
       if (updated.productId === id) {
