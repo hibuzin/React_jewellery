@@ -74,38 +74,6 @@ export default function ProductDetailPage() {
       }
     });
 
-    useEffect(() => {
-    console.log("🔌 Socket status:", socket.connected, "| Product ID:", id); // ⚡ ADD
-
-    socket.on("stockUpdated", ({ productId, quantity: newQty, isAvailable }) => {
-        console.log("📦 stockUpdated received — productId:", productId, "| page id:", id); // ⚡ ADD
-        if (productId.toString() === id.toString()) {
-            setProduct((prev) => ({ ...prev, quantity: newQty, isAvailable }));
-            toast.info(isAvailable ? `Stock updated: ${newQty} items available` : "This product is now Out of Stock");
-        }
-    });
-
-    socket.on("productUpdated", (updated) => {
-        console.log("✏️ productUpdated received:", updated); // ⚡ ADD
-        if (updated.productId.toString() === id.toString()) {
-            setProduct((prev) => ({ ...prev, ...updated }));
-        }
-    });
-
-    socket.on("productDeleted", ({ productId }) => {
-        if (productId.toString() === id.toString()) {
-            toast.error("This product has been removed.");
-            setTimeout(() => navigate("/"), 2000);
-        }
-    });
-
-    return () => {
-        socket.off("stockUpdated");
-        socket.off("productUpdated");
-        socket.off("productDeleted");
-    };
-}, [id]);
-
     // Admin updated product details (price, title, image etc)
     socket.on("productUpdated", (updated) => {
       if (updated.productId === id) {
@@ -155,42 +123,44 @@ export default function ProductDetailPage() {
   const SECRET_KEY = "royal_jewellery_secret";
 
   const handleAddToCart = async () => {
-    try {
-      const encrypted = localStorage.getItem("auth");
-      if (!encrypted) {
-        alert("Please login first ");
-        return;
-      }
+  if (!product.isAvailable) {
+    toast.error("This product is out of stock");
+    return;
+  }
 
-      const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
-      const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      const token = decrypted.token;
-
-      const res = await fetch(
-        "https://jewellery-backend-icja.onrender.com/api/cart/add",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            productId: product._id,
-            quantity,
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to add to cart");
-
-      const data = await res.json();
-      console.log(data);
-      showToast("Added to cart successfully ", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to add to cart", "error");
+  try {
+    const encrypted = localStorage.getItem("auth");
+    if (!encrypted) {
+      toast.error("Please login first");
+      return;
     }
-  };
+
+    const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
+    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const token = decrypted.token;
+
+    const res = await fetch(
+      "https://jewellery-backend-icja.onrender.com/api/cart/add",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: product._id,
+          quantity,
+        }),
+      }
+    );
+
+    if (!res.ok) throw new Error();
+
+    toast.success("Added to cart successfully");
+  } catch (err) {
+    toast.error("Failed to add to cart");
+  }
+};
 
   const handleAddToWishlist = async () => {
     try {
@@ -234,49 +204,55 @@ export default function ProductDetailPage() {
   };
 
   const handleBuyNow = async () => {
-    try {
-      const encrypted = localStorage.getItem("auth");
-      if (!encrypted) {
-        alert("Please login first ");
-        return;
-      }
 
-      const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
-      const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      const token = decrypted.token;
+  if (!product.isAvailable) {
+    toast.error("This product is out of stock");
+    return;
+  }
 
-      const res = await fetch(
-        "https://jewellery-backend-icja.onrender.com/api/orders/buy-now",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            address: {
-              name: "Arshath",
-              phone: "9876543210",
-              street: "sornapuram",
-              city: "Tenkasi",
-              state: "Tamil Nadu",
-              pincode: "627811",
-            },
-            productId: product._id,
-            quantity: quantity,
-            paymentMethod: "cod",
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error();
-
-      toast.success("Added to cart successfully ");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to add to cart");
+  try {
+    const encrypted = localStorage.getItem("auth");
+    if (!encrypted) {
+      toast.error("Please login first");
+      return;
     }
-  };
+
+    const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
+    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const token = decrypted.token;
+
+    const res = await fetch(
+      "https://jewellery-backend-icja.onrender.com/api/orders/buy-now",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address: {
+            name: "Arshath",
+            phone: "9876543210",
+            street: "sornapuram",
+            city: "Tenkasi",
+            state: "Tamil Nadu",
+            pincode: "627811",
+          },
+          productId: product._id,
+          quantity: quantity,
+          paymentMethod: "cod",
+        }),
+      }
+    );
+
+    if (!res.ok) throw new Error();
+
+    toast.success("Order placed successfully ");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to place order");
+  }
+};
 
   return (
     <>
@@ -438,7 +414,7 @@ export default function ProductDetailPage() {
               style={{
                 color: product.isAvailable ? "green" : "red",
                 fontWeight: 600,
-                marginBottom: "8px",
+                marginBottom: "20px",
               }}
             >
               {product.isAvailable
@@ -446,13 +422,23 @@ export default function ProductDetailPage() {
                 : "Out of Stock"}
             </p>
 
-            <h3 style={{ marginBottom: "10px", color: "#000" }}>DESCRIPTION</h3>
-            <p style={{ color: "#555", lineHeight: "1.6", marginBottom: "30px" }}>
-              {product.description}
-            </p>
+           <h3 style={{ marginBottom: "4px", marginTop: "0px", color: "#000" }}>
+  DESCRIPTION
+</h3>
+
+<p
+  style={{
+    color: "#555",
+    lineHeight: "1.6",
+    marginTop: "0px",
+    marginBottom: "15px",
+  }}
+>
+  {product.description}
+</p>
 
             {/* QUANTITY DROPDOWN */}
-            <div style={{ marginBottom: "20px", position: "relative", width: "140px", fontFamily: "sans-serif" }}>
+            <div style={{ marginBottom: "20px", position: "relative", width: "90px", fontFamily: "sans-serif" }}>
               <div
                 onClick={() => setShowQty(!showQty)}
                 style={{
@@ -516,23 +502,21 @@ export default function ProductDetailPage() {
             {/* BUTTONS */}
             <div className="button-group">
               {/* ⚡ Add to Cart disabled when out of stock */}
-              <button
-                onClick={handleAddToCart}
-                disabled={!product.isAvailable}
-                style={{
-                  flex: 1,
-                  padding: "15px",
-                  background: product.isAvailable ? "#f4b400" : "#ccc",
-                  border: "none",
-                  borderRadius: "1px",
-                  color: "white",
-                  fontWeight: "bold",
-                  cursor: product.isAvailable ? "pointer" : "not-allowed",
-                  outline: "none",
-                }}
-              >
-                {product.isAvailable ? "ADD TO CART" : "OUT OF STOCK"}
-              </button>
+             <button
+  onClick={handleAddToCart}
+  style={{
+    flex: 1,
+    padding: "15px",
+    background: "#f4b400",
+    border: "none",
+    borderRadius: "1px",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
+  }}
+>
+  ADD TO CART
+</button>
               <button
                 onClick={handleAddToWishlist}
                 style={{
@@ -553,27 +537,22 @@ export default function ProductDetailPage() {
 
             {/* BUY NOW */}
             <button
-              onClick={handleBuyNow}
-              disabled={!product.isAvailable}
-              style={{
-                width: "100%",
-                background: product.isAvailable ? "#ae9a60" : "#ccc",
-                border: "none",
-                borderRadius: "1px",
-                color: "white",
-                fontWeight: "bold",
-                cursor: product.isAvailable ? "pointer" : "not-allowed",
-                outline: "none",
-                padding: "16px",
-                fontSize: "16px",
-                letterSpacing: "1px",
-                marginBottom: "30px",
-                boxShadow: "0 8px 18px rgba(255, 255, 255, 0.2)",
-                transition: "0.3s",
-              }}
-            >
-              BUY NOW
-            </button>
+  onClick={handleBuyNow}
+  style={{
+    width: "100%",
+    background: "#ae9a60",
+    border: "none",
+    borderRadius: "1px",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
+    padding: "16px",
+    fontSize: "16px",
+    marginBottom: "30px",
+  }}
+>
+  BUY NOW
+</button>
 
             {/* FEATURES */}
             <div
