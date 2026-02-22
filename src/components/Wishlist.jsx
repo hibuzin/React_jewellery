@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
 
 const SECRET_KEY = "royal_jewellery_secret";
+const BASE_URL = "https://jewellery-backend-icja.onrender.com";
 
 const getToken = () => {
   try {
@@ -24,14 +25,13 @@ export default function WishlistPage() {
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
 
-useEffect(() => {
-  const handleResize = () => {
-    setIsMobile(window.innerWidth <= 600);
-  };
-
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -43,21 +43,20 @@ useEffect(() => {
 
   const fetchWishlist = async () => {
     try {
-      const res = await fetch(
-        "https://jewellery-backend-icja.onrender.com/api/wishlist",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${BASE_URL}/api/wishlist`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (res.ok) {
         const data = await res.json();
-       setWishlistItems(data?.wishlist || []);
+        console.log("WISHLIST DATA:", data);
+        setWishlistItems(data?.wishlist || []);
       }
     } catch (e) {
-      console.error(" ERROR:", e);
+      console.error("ERROR:", e);
     } finally {
       setIsLoading(false);
     }
@@ -96,15 +95,15 @@ useEffect(() => {
 
       {/* Grid */}
       <div style={styles.gridWrapper}>
-       <div
-  style={{
-    ...styles.grid,
-    gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-  }}
->
-          {wishlistItems.map((product, i) => {
-  return <WishlistCard key={i} product={product} />;  // item.product இல்ல, directly product
-})}
+        <div
+          style={{
+            ...styles.grid,
+            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+          }}
+        >
+          {wishlistItems.map((product, i) => (
+            <WishlistCard key={i} product={product} />
+          ))}
         </div>
       </div>
     </div>
@@ -113,6 +112,15 @@ useEffect(() => {
 
 function WishlistCard({ product }) {
   const [hovered, setHovered] = useState(false);
+
+  // ✅ Fixed: using mainImage.url from actual API response
+  const imageUrl = product?.mainImage?.url || "";
+
+  const title = product?.title || "Untitled";
+  const gram = product?.gram || "";
+  const price = product?.price || "";
+  const originalPrice = product?.originalPrice || "";
+  const isAvailable = product?.isAvailable ?? true;
 
   return (
     <div
@@ -129,13 +137,17 @@ function WishlistCard({ product }) {
       {/* Image */}
       <div style={styles.imageWrapper}>
         <img
-          src={product.image?.url || product.image}
-          alt={product.title}
+          src={imageUrl}
+          alt={title}
           style={{
             ...styles.image,
             transform: hovered ? "scale(1.05)" : "scale(1)",
           }}
+          onError={(e) => {
+            e.target.src = "https://via.placeholder.com/200x200?text=No+Image";
+          }}
         />
+
         {/* Overlay on hover */}
         <div style={{ ...styles.imageOverlay, opacity: hovered ? 1 : 0 }} />
 
@@ -143,24 +155,32 @@ function WishlistCard({ product }) {
         <div
           style={{
             ...styles.badge,
-            background: product.isAvailable
+            background: isAvailable
               ? "rgba(46,125,50,0.9)"
               : "rgba(198,40,40,0.9)",
           }}
         >
-          {product.isAvailable ? "Available" : "Out of Stock"}
+          {isAvailable ? "Available" : "Out of Stock"}
         </div>
       </div>
 
       {/* Details */}
       <div style={styles.details}>
-        <h3 style={styles.title}>{product.title}</h3>
+        <h3 style={styles.title}>{title}</h3>
 
         <div style={styles.meta}>
-          <span style={styles.gram}>{product.gram} g</span>
+          {gram && <span style={styles.gram}>{gram} g</span>}
         </div>
 
-        <div style={styles.price}>₹{product.price}</div>
+        {/* Price with original price strikethrough */}
+        <div style={styles.priceRow}>
+          <span style={styles.price}>₹{price.toLocaleString()}</span>
+          {originalPrice && originalPrice !== price && (
+            <span style={styles.originalPrice}>
+              ₹{originalPrice.toLocaleString()}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Bottom golden line accent */}
@@ -194,7 +214,7 @@ const styles = {
     height: 36,
     border: "2px solid #eee",
     borderTop: "2px solid #D4AF37",
-    borderRadius: "1",
+    borderRadius: "50%",
     animation: "spin 0.8s linear infinite",
   },
 
@@ -225,13 +245,12 @@ const styles = {
     marginTop: 8,
   },
 
-  /* Header */
- header: {
-  background: "#fff",
-  borderBottom: "1px solid rgba(212,175,55,0.15)",
-  padding: "5px 14px 5px",  // இன்னும் சின்னதா
-  textAlign: "center",
-},
+  header: {
+    background: "#fff",
+    borderBottom: "1px solid rgba(212,175,55,0.15)",
+    padding: "5px 14px 5px",
+    textAlign: "center",
+  },
 
   headerInner: {
     maxWidth: 500,
@@ -246,20 +265,20 @@ const styles = {
     fontWeight: 500,
   },
 
- headerTitle: {
-  fontSize: 24,  // 36 → 24
-  fontWeight: 300,
-  color: "#222",
-  letterSpacing: 2,
-  margin: 0,
-},
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 300,
+    color: "#222",
+    letterSpacing: 2,
+    margin: 0,
+  },
 
- headerLine: {
-  width: 48,
-  height: 1,
-  background: "#D4AF37",
-  margin: "8px auto",  // 16px → 8px
-},
+  headerLine: {
+    width: 48,
+    height: 1,
+    background: "#D4AF37",
+    margin: "8px auto",
+  },
 
   headerCount: {
     fontSize: 13,
@@ -267,19 +286,17 @@ const styles = {
     letterSpacing: 1,
   },
 
-  /* Grid */
   gridWrapper: {
     maxWidth: 1100,
     margin: "0 auto",
     padding: "40px 20px",
   },
 
-grid: {
-  display: "grid",
-  gap: 28,
-},
+  grid: {
+    display: "grid",
+    gap: 28,
+  },
 
-  /* Card */
   card: {
     background: "#fff",
     borderRadius: 1,
@@ -319,7 +336,7 @@ grid: {
     fontWeight: 600,
     letterSpacing: 0.5,
     padding: "4px 10px",
-    borderRadius: 20,
+    borderRadius: 1,
   },
 
   details: {
@@ -353,11 +370,24 @@ grid: {
     letterSpacing: 0.5,
   },
 
+  priceRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+
   price: {
     fontSize: 20,
     color: "#D4AF37",
     fontWeight: 500,
     letterSpacing: 0.5,
+  },
+
+  originalPrice: {
+    fontSize: 13,
+    color: "#bbb",
+    textDecoration: "line-through",
+    letterSpacing: 0.3,
   },
 
   cardAccent: {

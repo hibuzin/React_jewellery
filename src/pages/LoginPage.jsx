@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SECRET_KEY = "royal_jewellery_secret";
 
@@ -10,48 +12,51 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+ const handleLogin = async (e) => {
+  e.preventDefault();
 
-    try {
-      const response = await fetch(
-        "https://jewellery-backend-icja.onrender.com/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email,
-            password: password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // 🔐 Encrypt token + user
-        const encryptedData = CryptoJS.AES.encrypt(
-          JSON.stringify({
-            token: data.token,
-            user: data.user,
-          }),
-          SECRET_KEY
-        ).toString();
-
-        localStorage.setItem("auth", encryptedData);
-
-        alert("Login Successful 🔥");
-        navigate("/");
-      } else {
-        alert(data.message || "Login failed ❌");
+  try {
+    const response = await fetch(
+      "https://jewellery-backend-icja.onrender.com/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Server error ❌");
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const encryptedData = CryptoJS.AES.encrypt(
+        JSON.stringify({
+          token: data.token,
+          user: data.user,
+        }),
+        SECRET_KEY
+      ).toString();
+
+      localStorage.setItem("auth", encryptedData);
+
+      toast.success("Login Successful ");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+
+    } else {
+      toast.error(data.message || "Login failed ");
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    toast.error("Server error ");
+  }
+};
 
   return (
     <div style={styles.container}>
