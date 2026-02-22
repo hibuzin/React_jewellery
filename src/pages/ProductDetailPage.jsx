@@ -122,23 +122,35 @@ export default function ProductDetailPage() {
 
   const SECRET_KEY = "royal_jewellery_secret";
 
-  const handleAddToCart = async () => {
+  const getAuthToken = () => {
+  try {
+    const encrypted = localStorage.getItem("auth");
+    if (!encrypted) return null;
+
+    const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
+    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+    return decrypted.token;
+  } catch {
+    return null;
+  }
+};
+
+ const handleAddToCart = async () => {
   if (!product.isAvailable) {
     toast.error("This product is out of stock");
     return;
   }
 
+  const token = getAuthToken();
+
+  if (!token) {
+    toast.error("Please login first");
+    navigate("/login");
+    return;
+  }
+
   try {
-    const encrypted = localStorage.getItem("auth");
-    if (!encrypted) {
-      toast.error("Please login first");
-      return;
-    }
-
-    const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
-    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    const token = decrypted.token;
-
     const res = await fetch(
       "https://jewellery-backend-icja.onrender.com/api/cart/add",
       {
@@ -154,6 +166,12 @@ export default function ProductDetailPage() {
       }
     );
 
+    if (res.status === 401) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
     if (!res.ok) throw new Error();
 
     toast.success("Added to cart successfully");
@@ -163,6 +181,7 @@ export default function ProductDetailPage() {
 };
 
   const handleAddToWishlist = async () => {
+
     try {
       const encrypted = localStorage.getItem("auth");
       if (!encrypted) {
@@ -253,6 +272,7 @@ export default function ProductDetailPage() {
     toast.error("Failed to place order");
   }
 };
+
 
   return (
     <>

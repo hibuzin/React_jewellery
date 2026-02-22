@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { toast } from "react-toastify";
+import StripeWrapper from "../StripeWrapper";
+import PaymentForm from "../PaymentForm";
+
 
 const SECRET_KEY = "royal_jewellery_secret";
+
 
 const getToken = () => {
   try {
@@ -29,6 +33,7 @@ export default function OrderPage() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [clientSecret, setClientSecret] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -73,46 +78,33 @@ export default function OrderPage() {
   };
 
   const placeOrder = async () => {
-    if (!address) return;
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await fetch(
-        "https://jewellery-backend-icja.onrender.com/api/checkout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            address: {
-              name: address.name,
-              phone: address.phone,
-              street: address.street,
-              city: address.city,
-              state: address.state,
-              pincode: address.pincode,
-            },
-            paymentMethod: "cod",
-          }),
-        }
-      );
+  try {
+    const res = await fetch(
+      "https://jewellery-backend-icja.onrender.com/api/payment/create-payment-intent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+        }),
+      }
+    );
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-  toast.success("Order placed successfully ");
-  navigate("/");
-} else {
-  toast.error(data.message || "Failed to place order");
-}
-    }catch (e) {
-  toast.error("Something went wrong");
-}finally {
-      setLoading(false);
-    }
-  };
+    setClientSecret(data.clientSecret);
+
+  } catch (err) {
+    toast.error("Payment failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (pageLoading) {
     return (
@@ -248,6 +240,15 @@ export default function OrderPage() {
             >
               {loading ? "Placing Order..." : "  PLACE ORDER"}
             </button>
+            {clientSecret && (
+  <div style={{ marginTop: 20 }}>
+    <h3 style={{ marginBottom: 10 }}>Enter Card Details</h3>
+
+    <StripeWrapper clientSecret={clientSecret}>
+      <PaymentForm clientSecret={clientSecret} />
+    </StripeWrapper>
+  </div>
+)}
 
             <div style={styles.secureText}> Secure checkout</div>
           </div>

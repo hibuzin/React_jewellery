@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
+import AppBar from "./AppBar";
+import MainHeader from "./MainHeader";
 
 const SECRET_KEY = "royal_jewellery_secret";
 
@@ -23,6 +25,16 @@ export default function CartPage() {
 
   const navigate = useNavigate();
   const token = getToken();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth <= 600);
+  };
+
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
 
   useEffect(() => {
     if (!token) {
@@ -77,15 +89,28 @@ export default function CartPage() {
   if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
 
   return (
+    <>
+    <AppBar />
+          <MainHeader />
     <div style={{ background: "#FAF9F6", minHeight: "100vh" }}>
       {/* Header */}
-      <div style={styles.header}>
-        <h2 style={{ fontWeight: 300, letterSpacing: 1.5 ,color: "#333"}}>
-          Shopping Cart
-        </h2>
+     <div style={styles.header}>
+  <div style={styles.headerRow}>
 
-        <div style={styles.itemBadge}>{itemCount} Items</div>
-      </div>
+    {/* LEFT empty space for balance */}
+    <div style={{ width: 90 }} />
+
+    {/* CENTER Title */}
+    <div style={styles.headerInner}>
+      <p style={styles.headerSub}>CURATED FOR YOU</p>
+      <h1 style={styles.headerTitle}>My CART</h1>
+    </div>
+
+    {/* RIGHT Item Count */}
+    <div style={styles.itemBadge}>{itemCount} Items</div>
+
+  </div>
+</div>
 
       {/* Empty */}
       {cartItems.length === 0 ? (
@@ -95,7 +120,16 @@ export default function CartPage() {
       ) : (
         <>
           {/* Items */}
-          <div style={styles.list}>
+         <div
+  style={{
+    ...styles.list,
+    display: "grid",
+    gridTemplateColumns: isMobile
+      ? "repeat(2, 1fr)"
+      : "repeat(4, 1fr)",
+    gap: 20,
+  }}
+>
             {cartItems.map((item, i) => {
               const product = item.product;
               if (!product) return null;
@@ -149,29 +183,68 @@ export default function CartPage() {
               style={styles.checkout}
               onClick={() => navigate("/address")}
             >
-              Checkout
+              CHECKOUT
             </button>
           </div>
         </>
       )}
+      
     </div>
+    </>
   );
 }
 
 const styles = {
   header: {
     background: "#fff",
-    padding: "20px 30px",
-    display: "flex",
-    justifyContent: "space-between",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+    borderBottom: "1px solid rgba(212,175,55,0.15)",
+    padding: "5px 14px 5px",
+    textAlign: "center",
   },
+
+  headerInner: {
+    maxWidth: 500,
+    margin: "auto",
+    textAlign: "center",
+  },
+
+  headerRow: {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  maxWidth: 900,
+  margin: "auto",
+},
+
+  headerSub: {
+    fontSize: 11,
+    letterSpacing: 4,
+    color: "#D4AF37",
+    marginBottom: 8,
+    fontWeight: 500,
+  },
+
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 300,
+    color: "#222",
+    letterSpacing: 2,
+    margin: 0,
+  },
+
+  headerLine: {
+    width: 48,
+    height: 1,
+    background: "#D4AF37",
+    margin: "8px auto",
+  },
+
 
   itemBadge: {
     background: "rgba(212,175,55,0.1)",
     color: "#D4AF37",
     padding: "8px 16px",
-    borderRadius: 20,
+    borderRadius: 1,
     fontWeight: 500,
     alignSelf: "center",
     textAlign: "center",
@@ -183,23 +256,23 @@ const styles = {
     padding: 20,
   },
 
-  card: {
-    display: "flex",
-    gap: 20,
-    background: "#fff",
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 20,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-  },
+ card: {
+  background: "#fff",
+  padding: 16,
+  borderRadius: 12,
+  boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+},
 
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    objectFit: "cover",
-    border: "1px solid rgba(212,175,55,0.3)",
-  },
+ image: {
+  width: "100%",
+  height: 160,
+  borderRadius: 10,
+  objectFit: "cover",
+  marginBottom: 10,
+},
 
   gram: {
    background: "rgba(212,175,55,0.1)",

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
+import AppBar from "./AppBar";
+import MainHeader from "./MainHeader";
+
 
 const SECRET_KEY = "royal_jewellery_secret";
 const BASE_URL = "https://jewellery-backend-icja.onrender.com";
@@ -82,32 +85,56 @@ export default function WishlistPage() {
   }
 
   return (
-    <div style={styles.page}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerInner}>
-          <p style={styles.headerSub}>CURATED FOR YOU</p>
-          <h1 style={styles.headerTitle}>My Wishlist</h1>
-          <div style={styles.headerLine} />
-          <p style={styles.headerCount}>{wishlistItems.length} pieces saved</p>
-        </div>
-      </div>
+  <div style={styles.page}>
+    <AppBar />
+    <MainHeader />
 
-      {/* Grid */}
-      <div style={styles.gridWrapper}>
-        <div
-          style={{
-            ...styles.grid,
-            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-          }}
-        >
-          {wishlistItems.map((product, i) => (
-            <WishlistCard key={i} product={product} />
-          ))}
-        </div>
+    {isLoading ? (
+      <div style={styles.centered}>
+        <div style={styles.spinner} />
+        <p style={styles.loadingText}>Loading your wishlist...</p>
       </div>
-    </div>
-  );
+    ) : wishlistItems.length === 0 ? (
+      <div style={styles.centered}>
+        <div style={styles.emptyIcon}>♡</div>
+        <p style={styles.emptyText}>Your wishlist is empty</p>
+        <p style={styles.emptySubText}>
+          Save items you love to your wishlist
+        </p>
+      </div>
+    ) : (
+      <>
+        {/* Header */}
+        <div style={styles.header}>
+          <div style={styles.headerInner}>
+            <p style={styles.headerSub}>CURATED FOR YOU</p>
+            <h1 style={styles.headerTitle}>My Wishlist</h1>
+            <div style={styles.headerLine} />
+            <p style={styles.headerCount}>
+              {wishlistItems.length} pieces saved
+            </p>
+          </div>
+        </div>
+
+        {/* Grid */}
+        <div style={styles.gridWrapper}>
+          <div
+            style={{
+              ...styles.grid,
+              gridTemplateColumns: isMobile
+                ? "repeat(2, 1fr)"
+                : "repeat(4, 1fr)",
+            }}
+          >
+            {wishlistItems.map((product, i) => (
+              <WishlistCard key={i} product={product} />
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+);
 }
 
 function WishlistCard({ product }) {
@@ -123,6 +150,7 @@ function WishlistCard({ product }) {
   const isAvailable = product?.isAvailable ?? true;
 
   return (
+
     <div
       style={{
         ...styles.card,
@@ -191,6 +219,7 @@ function WishlistCard({ product }) {
         }}
       />
     </div>
+    
   );
 }
 

@@ -12,60 +12,52 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
- const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  try {
-    const response = await fetch(
-      "https://jewellery-backend-icja.onrender.com/api/auth/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+    try {
+      const response = await fetch(
+        "https://jewellery-backend-icja.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const encryptedData = CryptoJS.AES.encrypt(
+          JSON.stringify({
+            token: data.token,
+            user: data.user,
+          }),
+          SECRET_KEY
+        ).toString();
+
+        localStorage.setItem("auth", encryptedData);
+
+        toast.success("Login Successful");
+
+        setTimeout(() => navigate("/"), 1500);
+      } else {
+        toast.error(data.message || "Login failed");
       }
-    );
-
-    const data = await response.json();
-
-    if (response.ok) {
-      const encryptedData = CryptoJS.AES.encrypt(
-        JSON.stringify({
-          token: data.token,
-          user: data.user,
-        }),
-        SECRET_KEY
-      ).toString();
-
-      localStorage.setItem("auth", encryptedData);
-
-      toast.success("Login Successful ");
-
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
-
-    } else {
-      toast.error(data.message || "Login failed ");
+    } catch (error) {
+      toast.error("Server error");
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    toast.error("Server error ");
-  }
-};
+  };
 
   return (
     <div style={styles.container}>
       <form onSubmit={handleLogin} style={styles.form}>
-        <h2>Login</h2>
+        <h2 style={styles.title}>ROYAL JEWELLERY</h2>
+        <p style={styles.subtitle}>Sign in to continue</p>
 
         <input
           type="email"
-          placeholder="Enter Email"
+          placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -74,7 +66,7 @@ export default function LoginPage() {
 
         <input
           type="password"
-          placeholder="Enter Password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -82,7 +74,7 @@ export default function LoginPage() {
         />
 
         <button type="submit" style={styles.button}>
-          Login
+          LOGIN
         </button>
       </form>
     </div>
@@ -95,29 +87,52 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#f5f5f5",
+    background: "#faf9f6",
   },
+
   form: {
-    background: "#fff",
-    padding: "30px",
-    borderRadius: "8px",
-    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-    width: "300px",
+    background: "#ffffff",
+    padding: "40px 32px",
+    borderRadius: "14px",
+    width: "340px",
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
+    gap: "16px",
+    border: "1px solid rgba(212,175,55,0.35)",
   },
+
+  title: {
+    color: "#D4AF37",
+    letterSpacing: 3,
+    fontWeight: 500,
+    textAlign: "center",
+    marginBottom: 0,
+  },
+
+  subtitle: {
+    color: "#777",
+    textAlign: "center",
+    fontSize: 13,
+    marginBottom: 20,
+  },
+
   input: {
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid rgba(212,175,55,0.5)",
+    outline: "none",
+    fontSize: 14,
   },
+
   button: {
-    padding: "10px",
-    background: "#000",
+    padding: "12px",
+    background: "linear-gradient(135deg, #D4AF37, #b8962e)",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: 600,
+    letterSpacing: 1,
+    marginTop: 10,
   },
 };
