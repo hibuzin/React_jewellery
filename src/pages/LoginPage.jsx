@@ -53,7 +53,7 @@ export default function LoginPage() {
     <div style={styles.container}>
       <form onSubmit={handleLogin} style={styles.form}>
         <h2 style={styles.title}>ROYAL JEWELLERY</h2>
-        <p style={styles.subtitle}>Sign in to continue</p>
+        <p style={styles.subtitle}>LOGIN TO CONTINUE</p>
 
         <input
           type="email"
@@ -76,6 +76,12 @@ export default function LoginPage() {
         <button type="submit" style={styles.button}>
           LOGIN
         </button>
+        <p
+  style={styles.registerText}
+  onClick={() => navigate("/register")}
+>
+  Don’t have an account? <span style={styles.registerLink}>Sign up</span>
+</p>
       </form>
     </div>
   );
@@ -135,4 +141,17 @@ const styles = {
     letterSpacing: 1,
     marginTop: 10,
   },
+  registerText: {
+  textAlign: "center",
+  fontSize: 13,
+  color: "#777",
+  marginTop: 10,
+  cursor: "pointer",
+},
+
+registerLink: {
+  color: "#D4AF37",
+  fontWeight: 600,
+  marginLeft: 4,
+},
 };

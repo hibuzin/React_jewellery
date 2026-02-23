@@ -241,7 +241,7 @@ export default function ProductDetailPage() {
     const token = decrypted.token;
 
     const res = await fetch(
-      "https://jewellery-backend-icja.onrender.com/api/orders/buy-now",
+      "https://jewellery-backend-icja.onrender.com/api/order/buy-now",
       {
         method: "POST",
         headers: {
@@ -577,40 +577,47 @@ export default function ProductDetailPage() {
 </button>
 
             {/* FEATURES */}
-            <div
-              className="features-grid"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                background: "#eeeeee",
-                padding: "20px",
-                borderRadius: "1px",
-                textAlign: "center",
-                flexWrap: "wrap",
-                gap: "20px",
-              }}
-            >
-              <div style={{ color: "#000" }}>
-                <MdOutlineAutorenew size={22} color="#f4b400" />
-                <p style={{ color: "#000", fontWeight: 600 }}>Easy Returns</p>
-                <small>15 days return policy</small>
-              </div>
-              <div style={{ color: "#000" }}>
-                <FaLock size={22} color="#f4b400" />
-                <p style={{ fontWeight: 600 }}>Secure Payment</p>
-                <small>100% protected</small>
-              </div>
-              <div style={{ color: "#000" }}>
-                <FaTruck size={22} color="#f4b400" />
-                <p style={{ color: "#000", fontWeight: 600 }}>Fast Delivery</p>
-                <small>Quick shipping</small>
-              </div>
-              <div style={{ color: "#000" }}>
-                <FaGift size={22} color="#f4b400" />
-                <p style={{ fontWeight: 600 }}>Gift Wrapping</p>
-                <small>Premium packing</small>
-              </div>
-            </div>
+<div
+  className="features-grid"
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: "#faf9f6",
+    border: "1px solid rgba(212,175,55,0.25)",
+    padding: "12px 10px",
+    borderRadius: "6px",
+    textAlign: "center",
+    gap: "10px",
+    flexWrap: "nowrap",
+    overflowX: "auto", // mobile safe
+  }}
+>
+  {/* Item */}
+  <div style={itemStyle}>
+    <MdOutlineAutorenew size={18} color="#D4AF37" />
+    <p style={titleStyle}>Easy Returns</p>
+    <small style={subStyle}>15 days policy</small>
+  </div>
+
+  <div style={itemStyle}>
+    <FaLock size={18} color="#D4AF37" />
+    <p style={titleStyle}>Secure Payment</p>
+    <small style={subStyle}>100% protected</small>
+  </div>
+
+  <div style={itemStyle}>
+    <FaTruck size={18} color="#D4AF37" />
+    <p style={titleStyle}>Fast Delivery</p>
+    <small style={subStyle}>Quick shipping</small>
+  </div>
+
+  <div style={itemStyle}>
+    <FaGift size={18} color="#D4AF37" />
+    <p style={titleStyle}>Gift Wrapping</p>
+    <small style={subStyle}>Premium packing</small>
+  </div>
+</div>
           </div>
         </div>
 
@@ -646,3 +653,21 @@ export default function ProductDetailPage() {
     </>
   );
 }
+
+const itemStyle = {
+  flex: 1,
+  minWidth: 80,
+  color: "#000",
+};
+
+const titleStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  margin: "4px 0",
+  color: "#000",
+};
+
+const subStyle = {
+  fontSize: 11,
+  color: "#777",
+};

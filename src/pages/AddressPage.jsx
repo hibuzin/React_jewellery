@@ -111,13 +111,13 @@ export default function AddressPage() {
       );
 
       if (res.ok) {
-        alert("Address saved! ✅");
+        alert("Address saved! ");
         setName(""); setPhone(""); setStreet("");
         setCity(""); setStateVal(""); setPincode("");
         setErrors({});
         await fetchAddresses();
       } else {
-        alert("Failed to save address ❌");
+        alert("Failed to save address ");
       }
     } catch (e) {
       alert(e.toString());
@@ -391,10 +391,11 @@ const styles = {
     maxWidth: 800,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: 500,
-    marginBottom: 24,
-  },
+  fontSize: 22,
+  fontWeight: 500,
+  marginBottom: 24, 
+  color: "#000",
+},
   card: {
     display: "flex",
     alignItems: "flex-start",

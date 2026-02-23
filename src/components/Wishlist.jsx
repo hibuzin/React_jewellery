@@ -4,7 +4,6 @@ import CryptoJS from "crypto-js";
 import AppBar from "./AppBar";
 import MainHeader from "./MainHeader";
 
-
 const SECRET_KEY = "royal_jewellery_secret";
 const BASE_URL = "https://jewellery-backend-icja.onrender.com";
 
@@ -25,13 +24,12 @@ export default function WishlistPage() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const token = getToken();
-
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 600);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -52,10 +50,8 @@ export default function WishlistPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (res.ok) {
         const data = await res.json();
-        console.log("WISHLIST DATA:", data);
         setWishlistItems(data?.wishlist || []);
       }
     } catch (e) {
@@ -65,84 +61,118 @@ export default function WishlistPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div style={styles.centered}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading your wishlist...</p>
-      </div>
-    );
-  }
-
-  if (wishlistItems.length === 0) {
-    return (
-      <div style={styles.centered}>
-        <div style={styles.emptyIcon}>♡</div>
-        <p style={styles.emptyText}>Your wishlist is empty</p>
-        <p style={styles.emptySubText}>Save items you love to your wishlist</p>
-      </div>
-    );
-  }
+  const removeFromWishlist = async (productId) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/wishlist/${productId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWishlistItems(data?.wishlist || []);
+      }
+    } catch (err) {
+      console.error("Remove error:", err);
+    }
+  };
 
   return (
-  <div style={styles.page}>
-    <AppBar />
-    <MainHeader />
+    <div style={styles.page}>
+      <AppBar />
+      <MainHeader />
 
-    {isLoading ? (
-      <div style={styles.centered}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading your wishlist...</p>
-      </div>
-    ) : wishlistItems.length === 0 ? (
-      <div style={styles.centered}>
-        <div style={styles.emptyIcon}>♡</div>
-        <p style={styles.emptyText}>Your wishlist is empty</p>
-        <p style={styles.emptySubText}>
-          Save items you love to your wishlist
-        </p>
-      </div>
-    ) : (
-      <>
-        {/* Header */}
-        <div style={styles.header}>
-          <div style={styles.headerInner}>
-            <p style={styles.headerSub}>CURATED FOR YOU</p>
-            <h1 style={styles.headerTitle}>My Wishlist</h1>
-            <div style={styles.headerLine} />
-            <p style={styles.headerCount}>
-              {wishlistItems.length} pieces saved
+      {/* Loading State */}
+      {isLoading ? (
+        <div style={styles.centered}>
+          <div style={styles.spinner} />
+          <p style={styles.loadingText}>Loading your wishlist...</p>
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div style={styles.header}>
+            <div style={styles.headerInner}>
+              <p style={styles.headerSub}>CURATED FOR YOU</p>
+              <h1 style={styles.headerTitle}>MY WISHLIST</h1>
+              <div style={styles.headerLine} />
+              <p style={styles.headerCount}>{wishlistItems.length} pieces saved</p>
+            </div>
+          </div>
+
+          {/* Empty State */}
+          {wishlistItems.length === 0 ? (
+            <div style={styles.emptyWrapper}>
+              <p style={styles.emptyText}>Your wishlist is empty</p>
+              <p style={styles.emptySubText}>Save items you love to your wishlist</p>
+            </div>
+          ) : (
+            /* Grid */
+            <div style={styles.gridWrapper}>
+              <div
+                style={{
+                  ...styles.grid,
+                  gridTemplateColumns: isMobile
+                    ? "repeat(2, 1fr)"
+                    : "repeat(4, 1fr)",
+                }}
+              >
+                {wishlistItems.map((product, i) => (
+                  <WishlistCard
+                    key={i}
+                    product={product}
+                    onRemove={(id) => {
+                      setDeleteId(id);
+                      setShowConfirm(true);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Confirm Modal */}
+      {showConfirm && (
+        <div style={modalStyles.overlay}>
+          <div style={modalStyles.box}>
+            <h3 style={{ marginBottom: 10, color: "#777" }}>
+              Remove from Wishlist
+            </h3>
+            <p style={{ color: "#777", marginBottom: 20 }}>
+              Are you sure you want to remove this item?
             </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button
+                style={modalStyles.cancel}
+                onClick={() => setShowConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={modalStyles.delete}
+                onClick={() => {
+                  removeFromWishlist(deleteId);
+                  setShowConfirm(false);
+                }}
+              >
+                Remove
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Grid */}
-        <div style={styles.gridWrapper}>
-          <div
-            style={{
-              ...styles.grid,
-              gridTemplateColumns: isMobile
-                ? "repeat(2, 1fr)"
-                : "repeat(4, 1fr)",
-            }}
-          >
-            {wishlistItems.map((product, i) => (
-              <WishlistCard key={i} product={product} />
-            ))}
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
 }
 
-function WishlistCard({ product }) {
+function WishlistCard({ product, onRemove }) {
   const [hovered, setHovered] = useState(false);
 
-  // ✅ Fixed: using mainImage.url from actual API response
   const imageUrl = product?.mainImage?.url || "";
-
   const title = product?.title || "Untitled";
   const gram = product?.gram || "";
   const price = product?.price || "";
@@ -150,7 +180,6 @@ function WishlistCard({ product }) {
   const isAvailable = product?.isAvailable ?? true;
 
   return (
-
     <div
       style={{
         ...styles.card,
@@ -172,14 +201,11 @@ function WishlistCard({ product }) {
             transform: hovered ? "scale(1.05)" : "scale(1)",
           }}
           onError={(e) => {
-            e.target.src = "https://via.placeholder.com/200x200?text=No+Image";
+            e.target.src =
+              "https://via.placeholder.com/200x200?text=No+Image";
           }}
         />
-
-        {/* Overlay on hover */}
         <div style={{ ...styles.imageOverlay, opacity: hovered ? 1 : 0 }} />
-
-        {/* Availability badge */}
         <div
           style={{
             ...styles.badge,
@@ -192,15 +218,17 @@ function WishlistCard({ product }) {
         </div>
       </div>
 
+      {/* Remove Button */}
+      <div style={styles.removeBtn} onClick={() => onRemove(product._id)}>
+        ✕
+      </div>
+
       {/* Details */}
       <div style={styles.details}>
         <h3 style={styles.title}>{title}</h3>
-
         <div style={styles.meta}>
           {gram && <span style={styles.gram}>{gram} g</span>}
         </div>
-
-        {/* Price with original price strikethrough */}
         <div style={styles.priceRow}>
           <span style={styles.price}>₹{price.toLocaleString()}</span>
           {originalPrice && originalPrice !== price && (
@@ -211,15 +239,9 @@ function WishlistCard({ product }) {
         </div>
       </div>
 
-      {/* Bottom golden line accent */}
-      <div
-        style={{
-          ...styles.cardAccent,
-          width: hovered ? "100%" : "0%",
-        }}
-      />
+      {/* Bottom Golden Accent */}
+      <div style={{ ...styles.cardAccent, width: hovered ? "100%" : "0%" }} />
     </div>
-    
   );
 }
 
@@ -228,16 +250,22 @@ const styles = {
     background: "#ffffff",
     minHeight: "100vh",
   },
-
   centered: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
+    height: "60vh",
     background: "#ffffff",
   },
-
+  // ✅ Empty state - page layout-க்குள்ள, AppBar கீழே
+  emptyWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "80px 20px",
+  },
   spinner: {
     width: 36,
     height: 36,
@@ -267,11 +295,11 @@ const styles = {
     fontWeight: 300,
     letterSpacing: 1,
   },
-
+  
   emptySubText: {
     fontSize: 14,
     color: "#aaa",
-    marginTop: 8,
+    marginTop: 0,
   },
 
   header: {
@@ -293,7 +321,6 @@ const styles = {
     marginBottom: 8,
     fontWeight: 500,
   },
-
   headerTitle: {
     fontSize: 24,
     fontWeight: 300,
@@ -301,31 +328,26 @@ const styles = {
     letterSpacing: 2,
     margin: 0,
   },
-
   headerLine: {
     width: 48,
     height: 1,
     background: "#D4AF37",
     margin: "8px auto",
   },
-
   headerCount: {
     fontSize: 13,
     color: "#aaa",
     letterSpacing: 1,
   },
-
   gridWrapper: {
     maxWidth: 1100,
     margin: "0 auto",
     padding: "40px 20px",
   },
-
   grid: {
     display: "grid",
     gap: 28,
   },
-
   card: {
     background: "#fff",
     borderRadius: 1,
@@ -334,13 +356,11 @@ const styles = {
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     position: "relative",
   },
-
   imageWrapper: {
     position: "relative",
     overflow: "hidden",
     height: 200,
   },
-
   image: {
     width: "100%",
     height: "100%",
@@ -348,14 +368,12 @@ const styles = {
     transition: "transform 0.5s ease",
     display: "block",
   },
-
   imageOverlay: {
     position: "absolute",
     inset: 0,
     background: "rgba(212,175,55,0.08)",
     transition: "opacity 0.3s ease",
   },
-
   badge: {
     position: "absolute",
     top: 12,
@@ -367,11 +385,9 @@ const styles = {
     padding: "4px 10px",
     borderRadius: 1,
   },
-
   details: {
     padding: "18px 20px 20px",
   },
-
   title: {
     fontSize: 15,
     fontWeight: 500,
@@ -382,43 +398,53 @@ const styles = {
     textOverflow: "ellipsis",
     letterSpacing: 0.3,
   },
-
+  removeBtn: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    width: 28,
+    height: 28,
+    borderRadius: "50%",
+    background: "rgba(0,0,0,0.6)",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 14,
+    cursor: "pointer",
+    transition: "0.2s",
+  },
   meta: {
     display: "flex",
     gap: 8,
     marginBottom: 10,
   },
-
   gram: {
     background: "rgba(212,175,55,0.1)",
     color: "#D4AF37",
     fontSize: 11,
     padding: "3px 10px",
-    borderRadius: 20,
+    borderRadius: 1,
     fontWeight: 600,
     letterSpacing: 0.5,
   },
-
   priceRow: {
     display: "flex",
     alignItems: "center",
     gap: 8,
   },
-
   price: {
     fontSize: 20,
     color: "#D4AF37",
     fontWeight: 500,
     letterSpacing: 0.5,
   },
-
   originalPrice: {
     fontSize: 13,
     color: "#bbb",
     textDecoration: "line-through",
     letterSpacing: 0.3,
   },
-
   cardAccent: {
     position: "absolute",
     bottom: 0,
@@ -426,5 +452,44 @@ const styles = {
     height: 2,
     background: "linear-gradient(90deg, #D4AF37, #f0d060)",
     transition: "width 0.4s ease",
+  },
+};
+
+const modalStyles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.4)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+  },
+  box: {
+    background: "#fff",
+    padding: 30,
+    borderRadius: 1,
+    width: 300,
+    textAlign: "center",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+  },
+  cancel: {
+    padding: "10px 18px",
+    border: "1px solid #ccc",
+    background: "#d33e3e",
+    color: "#fff",
+    cursor: "pointer",
+    borderRadius: 1,
+  },
+  delete: {
+    padding: "10px 18px",
+    border: "none",
+    background: "#0e0d0d",
+    color: "#fff",
+    cursor: "pointer",
+    borderRadius: 1,
   },
 };

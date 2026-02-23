@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { toast } from "react-toastify";
-import StripeWrapper from "../StripeWrapper";
-import PaymentForm from "../PaymentForm";
 
 
 const SECRET_KEY = "royal_jewellery_secret";
@@ -33,7 +31,6 @@ export default function OrderPage() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [clientSecret, setClientSecret] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -82,7 +79,7 @@ export default function OrderPage() {
 
   try {
     const res = await fetch(
-      "https://jewellery-backend-icja.onrender.com/api/payment/create-payment-intent",
+      "https://jewellery-backend-icja.onrender.com/api/payment/create-checkout-session",
       {
         method: "POST",
         headers: {
@@ -97,9 +94,11 @@ export default function OrderPage() {
 
     const data = await res.json();
 
-    setClientSecret(data.clientSecret);
+    // Redirect user to Stripe payment page
+    window.location.href = data.url;
 
   } catch (err) {
+    console.error(err);
     toast.error("Payment failed");
   } finally {
     setLoading(false);
@@ -240,15 +239,7 @@ export default function OrderPage() {
             >
               {loading ? "Placing Order..." : "  PLACE ORDER"}
             </button>
-            {clientSecret && (
-  <div style={{ marginTop: 20 }}>
-    <h3 style={{ marginBottom: 10 }}>Enter Card Details</h3>
-
-    <StripeWrapper clientSecret={clientSecret}>
-      <PaymentForm clientSecret={clientSecret} />
-    </StripeWrapper>
-  </div>
-)}
+            
 
             <div style={styles.secureText}> Secure checkout</div>
           </div>

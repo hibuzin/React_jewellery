@@ -18,6 +18,8 @@ import "react-toastify/dist/ReactToastify.css";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import LoginPage from "./pages/LoginPage";
 import WishlistPage from "./components/Wishlist";
+import RegisterPage from "./pages/RegisterPage";
+
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
         <Route path="/address" element={<AddressPage />} />
         <Route path="/order" element={<OrderPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
+         <Route path="/" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Routes>
 
        {/* ⭐ IMPORTANT — Toast container */}
